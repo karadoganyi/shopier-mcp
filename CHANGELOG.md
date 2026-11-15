@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4 - 2026-11-15
+
+First run against a real Shopier shop.
+
+- Product titles over 80 characters or containing `&`, `<` or `>` are rejected before sending: Shopier stores `&` as `&amp;` and cuts long titles at about 90 characters.
+- A 403 from a product endpoint now explains that some accounts can create products but not read or update them, and points to Shopier support.
+- Tool descriptions now say how shipping fields map to "sepette kargo" and free shipping, that dispatch time is in business days, and that line breaks in descriptions are not shown.
+- README: new "Observed Shopier behaviour" section; date-format note updated (`+03:00` and `Z` are also accepted).
+
 ## 0.1.3 - 2026-11-15
 
 - npm showed the Turkish README on the package page, because npm picks the first `README.*` file it finds in the package root. The Turkish README moved to `docs/README.tr.md`, so `README.md` (English) is the only README in the root.

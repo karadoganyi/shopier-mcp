@@ -47,10 +47,14 @@ async function call(
     payload.data = res.data ?? (method === "DELETE" ? "Silindi." : null);
     return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
   } catch (err) {
-    const msg = err instanceof ShopierError ? err.message : `Beklenmeyen hata: ${(err as Error).message}`;
+    let msg = err instanceof ShopierError ? err.message : `Beklenmeyen hata: ${(err as Error).message}`;
+    if (err instanceof ShopierError && err.status === 403 && path.startsWith("/products")) msg += ` ${PRODUCTS_403_HINT}`;
     return { content: [{ type: "text", text: msg }], isError: true };
   }
 }
+
+const PRODUCTS_403_HINT =
+  "Not: Bazı Shopier hesaplarında ürün oluşturma (POST /products) çalışırken ürün okuma ve güncelleme 403 dönüyor. Bu hesap düzeyinde bir kısıttır; ürünü Shopier panelinden düzenleyin ve erişim için hello@shopier.com ile iletişime geçin.";
 
 function compact<T extends Record<string, unknown>>(o: T): Partial<T> {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
@@ -323,8 +327,19 @@ const variant = z.object({
   primary: z.boolean().optional(),
 });
 
+const productTitle = z
+  .string()
+  .trim()
+  .min(1)
+  .max(80, "Başlık en fazla 80 karakter olmalı; Shopier uzun başlıkları yaklaşık 90 karakterde kesiyor.")
+  .refine((v) => !/[&<>]/.test(v), "Başlıkta &, < veya > kullanmayın; Shopier bunları örn. &amp; olarak kaydedip sayfada öyle gösteriyor. & yerine 've' yazın.")
+  .describe("Ürün başlığı, en fazla 80 karakter; &, < ve > içermemeli.");
+
 const productCommon = {
-  description: z.string().optional(),
+  description: z
+    .string()
+    .optional()
+    .describe("Ürün açıklaması. API ile gönderilen satır sonları ürün sayfasında görünmez; metin tek paragraf olarak gösterilir."),
   stockQuantity: z.number().int().min(0).optional(),
   categories: z.array(z.object({ categoryId: z.string() })).optional(),
   variants: z.array(variant).optional().describe("Varyantlar. selectionId değerleri list_selections ile bulunur."),
@@ -336,11 +351,17 @@ const productCommon = {
   customListing: z.boolean().optional(),
   customNote: z.string().optional(),
   placementScore: z.number().int().min(1).optional().describe("Yüksek değerli ürünler vitrinde önce gösterilir."),
-  dispatchDuration: z.number().int().min(1).max(3).optional().describe("Kargoya teslim süresi (1-3 gün)."),
+  dispatchDuration: z
+    .number()
+    .int()
+    .min(1)
+    .max(3)
+    .optional()
+    .describe("Kargoya teslim süresi (1-3 iş günü); sayfada 'N iş günü içinde kargoda' olarak görünür."),
 };
 
 const createProductFields = {
-  title: z.string().min(1),
+  title: productTitle,
   type: z.enum(["physical", "digital"]),
   media: z.array(mediaItem).min(1).max(5),
   priceData: z.object({
@@ -356,7 +377,7 @@ const createProductFields = {
 };
 
 const updateProductFields = {
-  title: z.string().min(1).optional(),
+  title: productTitle.optional(),
   type: z.enum(["physical", "digital"]).optional(),
   media: z
     .array(mediaItem.extend({ placement: mediaItem.shape.placement.optional() }))
@@ -383,7 +404,7 @@ if (ALLOW_WRITES) {
     {
       title: "Ürün oluştur",
       description:
-        "Mağazada yeni ürün oluşturur. Görseller herkese açık URL olmalıdır (Shopier kendisi indirir). Fiyatlar metin olarak gönderilir.",
+        "Mağazada yeni ürün oluşturur. Görseller herkese açık URL olmalıdır; Shopier onları indirip kendi sunucusunda JPEG olarak saklar. Fiyatlar metin olarak gönderilir. Kargo: shippingPayer 'sellerPays' ve priceData.shippingPrice > 0 ise alıcı bu ücreti sepette öder; shippingPrice verilmezse ürün 'Ücretsiz kargo' olur. Bazı hesaplarda ürün sonradan API'den okunamıyor veya güncellenemiyor (403), bu yüzden alanları ilk seferde doğru gönderin.",
       inputSchema: createProductFields,
       annotations: WRITE,
     },

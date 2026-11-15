@@ -6,7 +6,7 @@
 
 ## Durum
 
-Deneysel (v0.1.3). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
+Deneysel (v0.1.4). 15.11.2026'da gerçek bir Shopier mağazasında denendi: ürün araçları dışındaki tüm okuma araçları ve `create_product` ile ürün oluşturma çalıştı. Bu hesapta Shopier ürün okuma ve güncellemeye 403 döndü (bkz. [Shopier'de gözlenen davranışlar](#shopierde-gözlenen-davranışlar)). Önce yalnızca okuma araçlarıyla deneyin.
 
 Resmi kaynaklar yalnızca bu GitHub deposu ve npm'deki [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) paketidir. Benzer adlı başka paketler bu projeye ait değildir.
 
@@ -41,12 +41,12 @@ Kaynak: [Creating and using PATs](https://developer.shopier.com/docs/creating-an
 
 ## Kurulum
 
-Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.3`); yeni sürüme geçmek için numarayı elle güncelleyin.
+Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.4`); yeni sürüme geçmek için numarayı elle güncelleyin.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.3
+claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.4
 ```
 
 `--scope user` sunucuyu tüm projelerde kullanılabilir yapar (varsayılan `local` yalnızca o klasörde geçerlidir). Yazma araçlarını da açmak için `-e SHOPIER_ALLOW_WRITES=true` ekleyin.
@@ -62,7 +62,7 @@ Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için k
   "mcpServers": {
     "shopier": {
       "command": "npx",
-      "args": ["-y", "shopier-mcp@0.1.3"],
+      "args": ["-y", "shopier-mcp@0.1.4"],
       "env": {
         "SHOPIER_PAT": "BURAYA_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
@@ -80,7 +80,7 @@ cd shopier-mcp
 npm install
 ```
 
-`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.3` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
+`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.4` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
 
 ## Ortam değişkenleri
 
@@ -108,7 +108,7 @@ Mağaza ayarlarını değiştirme (mağazayı kapatabilir) ve webhook oluşturma
 
 ## API notları
 
-- **Tarih biçimi:** `yyyy-MM-ddTHH:mm:ss+0300` (ofsette iki nokta yok). İndirim tarihleri: `yyyy-MM-dd+0300`.
+- **Tarih biçimi:** `yyyy-MM-ddTHH:mm:ss+0300`. Gerçek API `+03:00` ve `Z` biçimlerini de kabul etti; saatsiz tarihi reddediyor. İndirim tarihleri: `yyyy-MM-dd+0300`.
 - `list_orders` tarih verilmezse **yalnızca son 60 günü** döndürür.
 - Liste uçları sayfa başına en fazla 50 kayıt döner. Sayfa bilgisi Shopier'de yanıt başlıklarında gelir; sunucu bunu her liste yanıtına `pagination` alanı olarak ekler.
 - Fiyatlar metin olarak gönderilir (`"249.90"`).
@@ -116,6 +116,18 @@ Mağaza ayarlarını değiştirme (mağazayı kapatabilir) ve webhook oluşturma
 - Hız sınırı dakikada 200 istek. 429 alınırsa `Retry-After` ≤ 10 sn ise bir kez otomatik yeniden denenir.
 - 5xx hatasında yalnızca okuma istekleri bir kez yeniden denenir. Yazma isteklerinde (iade dahil) zaman aşımı veya 5xx olursa sunucu "sonuç bilinmiyor" der ve tekrar denemeden önce kaydın kontrol edilmesini ister; böylece çift iade gibi riskler önlenir.
 - Boş güncellemeler, boş/`..` ID'ler, negatif tutarlar ve spec'teki koşullu zorunlu alanlar (dijital teslimat notu, indirim tipine göre tutar/yüzde) istek gönderilmeden yerel olarak reddedilir.
+- 80 karakterden uzun ya da `&`, `<`, `>` içeren ürün başlıkları yerel olarak reddedilir (aşağıya bakın).
+
+## Shopier'de gözlenen davranışlar
+
+15.11.2026'da gerçek bir mağazada görüldü. Shopier'in dokümanında yazmıyor; değişebilir veya hesaba göre farklı olabilir.
+
+- **Ürün okuma ve güncelleme kapalı olabilir.** `create_product` çalıştı, ancak `list_products`, `get_product` ve `update_product` yeni oluşturulan ürün için bile `403 forbidden` döndü. Aynı `products:read` yetkisine bağlı kategori, varyasyon ve seçenek uçları çalıştı. Shopier'in dokümanı 403 için hello@shopier.com ile iletişime geçilmesini söylüyor. Sorun çözülene kadar ürünleri Shopier panelinden düzenleyin ve `create_product` ile tüm alanları ilk seferde doğru gönderin.
+- **Başlık:** `&` işareti `&amp;` olarak kaydediliyor ve ürün sayfasında öyle görünüyor; uzun başlıklar yaklaşık 90 karakterde kesiliyor. Bu yüzden sunucu 80 karakterden uzun ya da `&`, `<`, `>` içeren başlıkları reddeder.
+- **Açıklama:** API ile gönderilen satır sonları görünmüyor; açıklama tek paragraf olarak gösteriliyor.
+- **Görseller:** Shopier görsel adreslerini indirip kendi sunucusunda JPEG olarak saklıyor; kaynak adresin yalnızca bir kez çalışması yeterli.
+- **Kargo:** `shippingPayer: "sellerPays"` ve `priceData.shippingPrice` 0'dan büyükse alıcı bu ücreti sepette öder. `shippingPrice` verilmezse ürün sayfasında "Ücretsiz kargo" görünür ve API `"0.00"` kaydeder.
+- **Gönderim süresi:** `dispatchDuration: 3` sayfada "3 iş günü içinde kargoda" olarak görünür.
 
 ## Test
 
@@ -130,7 +142,7 @@ Ağ ve gerçek PAT gerektirmez:
 
 İsteğe bağlı: `npm run test:live` gerçek `api.shopier.com`'a **sahte** bir token ile istek atar ve temiz bir 401 bekler.
 
-Gerçek bir mağazaya karşı uçtan uca test edilmemiştir. Yazma isteklerinde 30 sn zaman aşımı yolu da otomatik testte yoktur.
+Yukarıdaki gerçek mağaza kontrolleri elle yapıldı ve `npm test`'in parçası değil. Yazma isteklerinde 30 sn zaman aşımı yolu otomatik testte yoktur.
 
 ## Lisans
 

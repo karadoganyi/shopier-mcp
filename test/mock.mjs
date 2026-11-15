@@ -91,6 +91,22 @@ assert.equal(t.req[0].method, "POST"); assert.equal(t.req[0].url, "/v1/products"
 assert.deepEqual(t.req[0].body, { ...product, media: [{ type: "image", url: "https://example.com/a.jpg", placement: 1 }] });
 ok("create_product gövdesi (media.type varsayılanı eklendi)");
 
+for (const [title, why] of [
+  ["Avokado 3'lü - Fuerte & Zutano", "& içeren başlık"],
+  ["Kupa <b>", "< > içeren başlık"],
+  ["x".repeat(81), "81 karakterlik başlık"],
+  ["   ", "boş başlık"],
+]) {
+  t = await run("create_product", { ...product, title });
+  assert.equal(t.r.isError, true, why);
+  assert.equal(t.req.length, 0, `${why}: istek gönderilmemeli`);
+}
+t = await run("update_product", { productId: "p1", title: "A & B" });
+assert.equal(t.r.isError, true); assert.equal(t.req.length, 0);
+t = await run("create_product", { ...product, title: "  " + "Ç".repeat(80) + "  " });
+assert.equal(t.req[0].body.title, "Ç".repeat(80));
+ok("başlık: &, <, >, 80 karakter üstü ve boş başlık istek göndermeden reddediliyor; baştaki/sondaki boşluk kırpılıyor");
+
 t = await run("create_discount_code", { code: "X", scope: "all", type: "percent", requirement: "amount", currency: "TRY", numAvailable: 5, expiresAt: "2026-12-31+0300" });
 assert.equal(t.r.isError, true); assert.equal(t.req.length, 0);
 t = await run("create_discount_code", { code: "X", scope: "all", type: "percent", percentOff: "15", requirement: "amount", currency: "TRY", numAvailable: 5, expiresAt: "2026-12-31+0300" });
@@ -112,7 +128,11 @@ assert.equal(t.r.isError, true); assert.match(t.text, /\(404\)/);
 queue.push({ status: 403 });
 t = await run("get_balance", {});
 assert.match(t.text, /\(403\)/);
-ok("403/404 anlaşılır hataya dönüşüyor");
+assert.doesNotMatch(t.text, /hello@shopier\.com/);
+queue.push({ status: 403, body: '{"error":"forbidden"}' });
+t = await run("get_product", { productId: "52978169" });
+assert.match(t.text, /\(403\)/); assert.match(t.text, /hello@shopier\.com/);
+ok("403/404 anlaşılır hataya dönüşüyor; ürün uç noktalarında 403'e hesap kısıtı notu ekleniyor");
 
 queue.push({ status: 429, headers: { "Retry-After": "1" } });
 t = await run("get_balance", {});

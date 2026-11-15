@@ -8,7 +8,7 @@ Tool descriptions and error messages are in Turkish, because Shopier's users are
 
 ## Status
 
-Experimental (v0.1.3). It passes protocol tests and a local mock API, but **it has not yet been tested end to end against a real Shopier shop**. Start with the read-only tools.
+Experimental (v0.1.4). Tested against a real Shopier shop on 2026-11-15: every read tool except the product ones, and creating products with `create_product`. On that account Shopier returned 403 for reading and updating products (see [Observed Shopier behaviour](#observed-shopier-behaviour)). Start with the read-only tools.
 
 The only official sources are this GitHub repository and the [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) package on npm. Packages with similar names are not this project.
 
@@ -43,12 +43,12 @@ Source: [Creating and using PATs](https://developer.shopier.com/docs/creating-an
 
 ## Install
 
-Nothing to install: your MCP client downloads and runs the server from npm with `npx`. The examples pin the version (`@0.1.3`); bump it by hand to upgrade.
+Nothing to install: your MCP client downloads and runs the server from npm with `npx`. The examples pin the version (`@0.1.4`); bump it by hand to upgrade.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=YOUR_PAT -- npx -y shopier-mcp@0.1.3
+claude mcp add shopier --scope user -e SHOPIER_PAT=YOUR_PAT -- npx -y shopier-mcp@0.1.4
 ```
 
 `--scope user` makes the server available in all projects (the default, `local`, applies only to the current folder). Add `-e SHOPIER_ALLOW_WRITES=true` to enable the write tools.
@@ -64,7 +64,7 @@ In `claude_desktop_config.json`:
   "mcpServers": {
     "shopier": {
       "command": "npx",
-      "args": ["-y", "shopier-mcp@0.1.3"],
+      "args": ["-y", "shopier-mcp@0.1.4"],
       "env": {
         "SHOPIER_PAT": "YOUR_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
@@ -82,7 +82,7 @@ cd shopier-mcp
 npm install
 ```
 
-`npm install` also builds the project (`dist/`). In the examples above, replace `npx -y shopier-mcp@0.1.3` with `node /ABSOLUTE/PATH/shopier-mcp/dist/index.js`.
+`npm install` also builds the project (`dist/`). In the examples above, replace `npx -y shopier-mcp@0.1.4` with `node /ABSOLUTE/PATH/shopier-mcp/dist/index.js`.
 
 ## Environment variables
 
@@ -110,7 +110,7 @@ Changing shop settings (which can close the shop) and creating webhooks (which s
 
 ## API notes
 
-- **Date format:** `yyyy-MM-ddTHH:mm:ss+0300` (no colon in the offset). Discount dates use `yyyy-MM-dd+0300`.
+- **Date format:** `yyyy-MM-ddTHH:mm:ss+0300`. The real API also accepted `+03:00` and `Z`, but rejects a date without a time. Discount dates use `yyyy-MM-dd+0300`.
 - Without dates, `list_orders` returns **only the last 60 days**.
 - List endpoints return at most 50 items per page. Shopier sends pagination data in response headers; the server adds it to every list response as a `pagination` field.
 - Prices are sent as strings (`"249.90"`).
@@ -118,6 +118,18 @@ Changing shop settings (which can close the shop) and creating webhooks (which s
 - The rate limit is 200 requests per minute. On a 429, the request is retried once automatically if `Retry-After` is 10 seconds or less.
 - On a 5xx, only read requests are retried once. For write requests (refunds included), a timeout or 5xx is reported as "outcome unknown" and the model is asked to check the record before retrying, which prevents double refunds.
 - Empty updates, empty or `..` IDs, negative amounts and the spec's conditionally required fields (the note for digital deliveries, the amount or percentage for each discount type) are rejected locally before any request is sent.
+- Product titles longer than 80 characters or containing `&`, `<` or `>` are rejected locally (see below).
+
+## Observed Shopier behaviour
+
+Seen on a real shop on 2026-11-15. Shopier's documentation does not describe these, so they may change or differ per account.
+
+- **Product read and update can be blocked.** `create_product` worked, but `list_products`, `get_product` and `update_product` returned `403 forbidden`, even for a product just created. Categories, variations and selections, which use the same `products:read` scope, worked. Shopier's docs say to contact hello@shopier.com about a 403. Until it is resolved, edit products in the Shopier panel, and send every field correctly on the first `create_product`.
+- **Titles:** `&` is stored as `&amp;` and shown that way on the product page, and long titles are cut at about 90 characters. The server therefore rejects titles over 80 characters or containing `&`, `<` or `>`.
+- **Descriptions:** line breaks sent through the API are not shown; the description is displayed as one paragraph.
+- **Images:** Shopier downloads the image URLs and stores them as JPEG on its own CDN, so the source URL only has to work once.
+- **Shipping:** `shippingPayer: "sellerPays"` with `priceData.shippingPrice` above 0 charges the buyer that fee in the basket. Without `shippingPrice`, the product page shows "Ücretsiz kargo" and the API stores `"0.00"`.
+- **Dispatch time:** `dispatchDuration: 3` is shown as "3 iş günü içinde kargoda" (dispatched within 3 business days).
 
 ## Test
 
@@ -132,7 +144,7 @@ Needs no network and no real PAT:
 
 Optional: `npm run test:live` calls the real `api.shopier.com` with a **fake** token and expects a clean 401.
 
-It has not been tested end to end against a real shop, and the 30-second timeout path for write requests has no automated test.
+The real-shop checks above were done by hand and are not part of `npm test`. The 30-second timeout path for write requests has no automated test.
 
 ## License
 

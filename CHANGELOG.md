@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-11-15
+
+- Published to npm as `shopier-mcp`; install with `npx -y shopier-mcp@0.1.1`.
+- Added `mcpName` (`io.github.karadoganyi/shopier-mcp`) for the official MCP Registry.
+- README: npx setup for Claude Code and Claude Desktop. No code changes.
+
 ## 0.1.0 - 2026-11-15
 
 First public release. Experimental: not yet tested against a real Shopier shop.

@@ -1,7 +1,8 @@
 {
   "name": "shopier-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial MCP server for the Shopier REST API (orders, products, shipping, refunds, balance). Not affiliated with Shopier.",
+  "mcpName": "io.github.karadoganyi/shopier-mcp",
   "keywords": [
     "mcp",
     "mcp-server",

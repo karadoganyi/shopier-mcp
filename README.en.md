@@ -8,9 +8,9 @@ Tool descriptions and error messages are in Turkish, because Shopier's users are
 
 ## Status
 
-Experimental (v0.1.0). It passes protocol tests and a local mock API, but **it has not yet been tested end to end against a real Shopier shop**. Start with the read-only tools.
+Experimental (v0.1.1). It passes protocol tests and a local mock API, but **it has not yet been tested end to end against a real Shopier shop**. Start with the read-only tools.
 
-This package is not published on npm. The only source is this GitHub repository; any `shopier-mcp` package on npm is not this project.
+The only official sources are this GitHub repository and the [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) package on npm. Packages with similar names are not this project.
 
 ## Disclaimer
 
@@ -35,18 +35,12 @@ The software is provided under the MIT license, "as is", without warranty of any
 
 ## Install
 
-```bash
-git clone https://github.com/karadoganyi/shopier-mcp.git
-cd shopier-mcp
-npm install
-```
-
-`npm install` also builds the project (`dist/`).
+Nothing to install: your MCP client downloads and runs the server from npm with `npx`. The examples pin the version (`@0.1.1`); bump it by hand to upgrade.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=YOUR_PAT -- node /ABSOLUTE/PATH/shopier-mcp/dist/index.js
+claude mcp add shopier --scope user -e SHOPIER_PAT=YOUR_PAT -- npx -y shopier-mcp@0.1.1
 ```
 
 This writes the PAT to your shell history; remove it from the history afterwards.
@@ -59,8 +53,8 @@ In `claude_desktop_config.json`:
 {
   "mcpServers": {
     "shopier": {
-      "command": "node",
-      "args": ["/ABSOLUTE/PATH/shopier-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "shopier-mcp@0.1.1"],
       "env": {
         "SHOPIER_PAT": "YOUR_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
@@ -69,6 +63,16 @@ In `claude_desktop_config.json`:
   }
 }
 ```
+
+### From source
+
+```bash
+git clone https://github.com/karadoganyi/shopier-mcp.git
+cd shopier-mcp
+npm install
+```
+
+`npm install` also builds the project (`dist/`). In the examples above, replace `npx -y shopier-mcp@0.1.1` with `node /ABSOLUTE/PATH/shopier-mcp/dist/index.js`.
 
 ## Environment variables
 

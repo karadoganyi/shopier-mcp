@@ -6,9 +6,9 @@
 
 ## Durum
 
-Deneysel (v0.1.0). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
+Deneysel (v0.1.1). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
 
-Bu paket npm'de yayımlanmamıştır. Tek kaynak bu GitHub deposudur; npm'de `shopier-mcp` adıyla göreceğiniz bir paket bu projeye ait değildir.
+Resmi kaynaklar yalnızca bu GitHub deposu ve npm'deki [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) paketidir. Benzer adlı başka paketler bu projeye ait değildir.
 
 ## Sorumluluk reddi ve marka
 
@@ -41,18 +41,12 @@ Kaynak: [Creating and using PATs](https://developer.shopier.com/docs/creating-an
 
 ## Kurulum
 
-```bash
-git clone https://github.com/karadoganyi/shopier-mcp.git
-cd shopier-mcp
-npm install
-```
-
-`npm install` derlemeyi de yapar (`dist/` oluşur).
+Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.1`); yeni sürüme geçmek için numarayı elle güncelleyin.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- node /TAM/YOL/shopier-mcp/dist/index.js
+claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.1
 ```
 
 `--scope user` sunucuyu tüm projelerde kullanılabilir yapar (varsayılan `local` yalnızca o klasörde geçerlidir). Yazma araçlarını da açmak için `-e SHOPIER_ALLOW_WRITES=true` ekleyin.
@@ -67,8 +61,8 @@ Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için k
 {
   "mcpServers": {
     "shopier": {
-      "command": "node",
-      "args": ["/TAM/YOL/shopier-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "shopier-mcp@0.1.1"],
       "env": {
         "SHOPIER_PAT": "BURAYA_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
@@ -77,6 +71,16 @@ Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için k
   }
 }
 ```
+
+### Kaynaktan çalıştırma
+
+```bash
+git clone https://github.com/karadoganyi/shopier-mcp.git
+cd shopier-mcp
+npm install
+```
+
+`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.1` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
 
 ## Ortam değişkenleri
 

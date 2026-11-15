@@ -1,70 +1,72 @@
 # shopier-mcp
 
-[English](README.en.md)
+[Türkçe](README.tr.md)
 
-[Shopier REST API v1](https://developer.shopier.com/reference/introduction) için **resmi olmayan** bir MCP sunucusu. Claude'un (veya MCP destekleyen başka bir istemcinin) Shopier mağazanızdaki siparişleri, ürünleri, kargoları, iadeleri ve bakiyeyi okumasını; isterseniz ürün/sipariş/indirim güncellemesini sağlar.
+An **unofficial** MCP server for the [Shopier REST API v1](https://developer.shopier.com/reference/introduction). It lets Claude, or any other MCP client, read the orders, products, shipping, refunds and balance of your Shopier shop, and optionally update products, orders and discounts.
 
-## Durum
+Tool descriptions and error messages are in Turkish, because Shopier's users are Turkish sellers. Tool names, parameters and enum values are in English.
 
-Deneysel (v0.1.1). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
+## Status
 
-Resmi kaynaklar yalnızca bu GitHub deposu ve npm'deki [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) paketidir. Benzer adlı başka paketler bu projeye ait değildir.
+Experimental (v0.1.2). It passes protocol tests and a local mock API, but **it has not yet been tested end to end against a real Shopier shop**. Start with the read-only tools.
 
-## Sorumluluk reddi ve marka
+The only official sources are this GitHub repository and the [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) package on npm. Packages with similar names are not this project.
 
-Bu proje bağımsız, resmi olmayan bir açık kaynak projesidir. Shopier ile bir bağlantısı yoktur; Shopier tarafından geliştirilmemiş, onaylanmamış veya desteklenmemiştir. "Shopier" adı ve ilgili markalar sahiplerine aittir ve burada yalnızca yazılımın hangi API ile çalıştığını belirtmek için kullanılmıştır.
+## Disclaimer
 
-Yazılım MIT lisansı altında, "olduğu gibi" ve hiçbir garanti verilmeden sunulur. Mağazanızda yapılan her işlemin (sipariş, ürün, indirim, para iadesi, silme) sorumluluğu size aittir.
+This is an independent, unofficial open-source project. It is not affiliated with, endorsed by, or supported by Shopier. "Shopier" and related marks belong to their respective owner and are used here only to identify the API this software talks to.
 
-## Güvenlik
+The software is provided under the MIT license, "as is", without warranty of any kind. You are responsible for every action taken in your shop (orders, products, discounts, refunds, deletions).
 
-- **PAT hesabınıza tam erişim verir.** Shopier dokümantasyonuna göre PAT'i paylaşmak hesabınıza tam erişim vermek demektir. Kimseyle paylaşmayın, sohbete yapıştırmayın, git'e koymayın.
-- **Bu sunucu kendi bilgisayarınızda çalışır.** PAT'iniz proje sahibine veya başka bir sunucuya gönderilmez; yalnızca `api.shopier.com` adresine gider. `SHOPIER_API_BASE_URL` değerini değiştirirseniz PAT o adrese gönderilir; emin değilseniz dokunmayın.
-- **PAT yapılandırma dosyasında düz metin olarak durur** (`claude_desktop_config.json` veya Claude Code ayarları). Bu dosyaları paylaşmayın. `claude mcp add --scope project` kullanmayın; PAT'i proje klasöründeki `.mcp.json` dosyasına yazar.
-- **Okuma araçları müşteri verisi döndürür** (ad, adres, telefon, e-posta, sipariş içeriği). Bu veriler kullandığınız MCP istemcisine ve onun bağlı olduğu yapay zeka sağlayıcısına gider. Müşterilerinizin kişisel verilerini nasıl işlediğinizin sorumluluğu size aittir.
-- **Yazma araçları varsayılan olarak kapalıdır.** `SHOPIER_ALLOW_WRITES=true` yalnızca ihtiyacınız olduğunda açın. Açıkken model ürün, sipariş, kargo ve indirim kayıtlarını değiştirebilir.
-- **`SHOPIER_ALLOW_DANGEROUS=true` para iadesi ve kalıcı silmeyi açar.** Bunlar geri alınamayabilir. Yalnızca o işlemi yapacağınız oturumda açın, sonra kapatın. İstemcinizde araç çağrıları için otomatik onayı açık bırakmayın.
-- PAT'in sızdığından şüphelenirseniz Shopier'de *Hesap > Personal Access Token* bölümünden silip yenisini oluşturun.
+## Security
 
-## Gereksinimler
+- **A PAT grants full access to your account.** Do not share it, paste it into a chat, or commit it.
+- **The server runs on your own machine.** Your PAT is never sent to the project author or any other server; it goes only to `api.shopier.com`. If you override `SHOPIER_API_BASE_URL`, the PAT is sent to that host instead.
+- **The PAT is stored in plain text** in your MCP client configuration. Do not share those files, and do not use `claude mcp add --scope project`, which writes the PAT to `.mcp.json` in the project folder.
+- **Read tools return customer data** (names, addresses, phone numbers, emails, order contents). That data goes to your MCP client and the AI provider behind it. How you handle your customers' personal data is your responsibility.
+- **Write tools are off by default.** Set `SHOPIER_ALLOW_WRITES=true` only when you need them.
+- **`SHOPIER_ALLOW_DANGEROUS=true` enables refunds and permanent deletion.** These may be irreversible. Enable it only for the session that needs it, and do not auto-approve tool calls in your client.
+- If you suspect the PAT has leaked, delete it under *Account > Personal Access Token* in Shopier and create a new one.
+
+## Requirements
 
 - Node.js 22+
-- Shopier hesabında bir **Personal Access Token (PAT)**
+- A Shopier **Personal Access Token (PAT)**
 
-### PAT oluşturma
+### Creating a PAT
 
-1. Shopier hesabınızda **iki adımlı doğrulamayı (2FA)** açın: *Hesap > Hesap Güvenliği*. 2FA kapalıyken PAT oluşturulamaz.
-2. *Hesap > Personal Access Token* bölümünde bir isim verip **Generate**'e basın.
-3. Token yalnızca bir kez gösterilir, hemen kopyalayın.
+1. Enable **two-factor authentication (2FA)** on your Shopier account under *Account > Account Security*. A PAT cannot be created while 2FA is off.
+2. Under *Account > Personal Access Token*, give it a name and click **Generate**.
+3. The token is shown only once; copy it right away.
 
-Kaynak: [Creating and using PATs](https://developer.shopier.com/docs/creating-and-using-pats.md).
+Source: [Creating and using PATs](https://developer.shopier.com/docs/creating-and-using-pats.md).
 
-## Kurulum
+## Install
 
-Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.1`); yeni sürüme geçmek için numarayı elle güncelleyin.
+Nothing to install: your MCP client downloads and runs the server from npm with `npx`. The examples pin the version (`@0.1.2`); bump it by hand to upgrade.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.1
+claude mcp add shopier --scope user -e SHOPIER_PAT=YOUR_PAT -- npx -y shopier-mcp@0.1.2
 ```
 
-`--scope user` sunucuyu tüm projelerde kullanılabilir yapar (varsayılan `local` yalnızca o klasörde geçerlidir). Yazma araçlarını da açmak için `-e SHOPIER_ALLOW_WRITES=true` ekleyin.
+`--scope user` makes the server available in all projects (the default, `local`, applies only to the current folder). Add `-e SHOPIER_ALLOW_WRITES=true` to enable the write tools.
 
-Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için komutun başına bir boşluk koyun (zsh'de `setopt HIST_IGNORE_SPACE` açıksa) ya da çalıştırdıktan sonra geçmişten silin.
+This command writes the PAT to your shell history. To avoid that, start the command with a space (if `HIST_IGNORE_SPACE` is set in zsh) or delete it from the history afterwards.
 
 ### Claude Desktop
 
-`claude_desktop_config.json` içine:
+In `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "shopier": {
       "command": "npx",
-      "args": ["-y", "shopier-mcp@0.1.1"],
+      "args": ["-y", "shopier-mcp@0.1.2"],
       "env": {
-        "SHOPIER_PAT": "BURAYA_PAT",
+        "SHOPIER_PAT": "YOUR_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
       }
     }
@@ -72,7 +74,7 @@ Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için k
 }
 ```
 
-### Kaynaktan çalıştırma
+### From source
 
 ```bash
 git clone https://github.com/karadoganyi/shopier-mcp.git
@@ -80,42 +82,42 @@ cd shopier-mcp
 npm install
 ```
 
-`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.1` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
+`npm install` also builds the project (`dist/`). In the examples above, replace `npx -y shopier-mcp@0.1.2` with `node /ABSOLUTE/PATH/shopier-mcp/dist/index.js`.
 
-## Ortam değişkenleri
+## Environment variables
 
-| Değişken | Varsayılan | Açıklama |
+| Variable | Default | Description |
 | --- | --- | --- |
-| `SHOPIER_PAT` | — | Zorunlu. Bearer token olarak gönderilir, hiçbir yere loglanmaz. |
-| `SHOPIER_ALLOW_WRITES` | `false` | `true` ise ürün, sipariş, kargo, kategori ve indirim yazma araçları açılır. |
-| `SHOPIER_ALLOW_DANGEROUS` | `false` | `true` **ve** yazma açıksa: para iadesi (`create_refund`) ve kalıcı silme (`delete_resource`) açılır. |
-| `SHOPIER_API_BASE_URL` | `https://api.shopier.com/v1` | Test için değiştirilebilir. Yalnızca https (localhost için http) kabul edilir; varsayılan dışı adreste stderr'e uyarı yazılır. |
+| `SHOPIER_PAT` | — | Required. Sent as a Bearer token, never logged. |
+| `SHOPIER_ALLOW_WRITES` | `false` | Enables the product, order, shipping, category and discount write tools. |
+| `SHOPIER_ALLOW_DANGEROUS` | `false` | With writes enabled, also enables refunds (`create_refund`) and permanent deletion (`delete_resource`). |
+| `SHOPIER_API_BASE_URL` | `https://api.shopier.com/v1` | For testing. Only https is accepted (http for localhost); a non-default host prints a warning to stderr. |
 
-Bayraklar `true`, `1`, `yes`, `on` değerlerini kabul eder. Kapalı olan araçlar hiç kaydedilmez; model onları göremez.
+Flags accept `true`, `1`, `yes` or `on`. Disabled tools are not registered at all, so the model cannot see them.
 
-## Araçlar
+## Tools
 
-**Okuma (her zaman açık, 17 araç)**
+**Read (always on, 17 tools)**
 `list_orders`, `get_order`, `get_order_transaction`, `list_products`, `get_product`, `list_categories`, `list_variations`, `list_selections`, `list_refunds`, `list_shippings`, `get_balance`, `list_balance_transactions`, `list_payouts`, `list_payout_transactions`, `get_shop_info`, `list_discounts`, `list_webhooks`
 
-**Yazma (`SHOPIER_ALLOW_WRITES=true`, +9 araç)**
+**Write (`SHOPIER_ALLOW_WRITES=true`, +9 tools)**
 `create_product`, `update_product`, `fulfill_order`, `update_order_shipping_address`, `create_shipping_code`, `create_category`, `create_discount_code`, `update_discount_code`, `create_automatic_discount`
 
-**Tehlikeli (`SHOPIER_ALLOW_DANGEROUS=true`, +2 araç)**
-`create_refund` (alıcıya para iadesi), `delete_resource` (ürün/kategori/indirim/kargo kodu/webhook kalıcı silme)
+**Dangerous (`SHOPIER_ALLOW_DANGEROUS=true`, +2 tools)**
+`create_refund` (refunds the buyer), `delete_resource` (permanently deletes a product, category, discount, shipping code or webhook)
 
-Mağaza ayarlarını değiştirme (mağazayı kapatabilir) ve webhook oluşturma (müşteri verisini bir URL'ye gönderir) bilerek eklenmedi.
+Changing shop settings (which can close the shop) and creating webhooks (which send customer data to a URL) are deliberately left out.
 
-## API notları
+## API notes
 
-- **Tarih biçimi:** `yyyy-MM-ddTHH:mm:ss+0300` (ofsette iki nokta yok). İndirim tarihleri: `yyyy-MM-dd+0300`.
-- `list_orders` tarih verilmezse **yalnızca son 60 günü** döndürür.
-- Liste uçları sayfa başına en fazla 50 kayıt döner. Sayfa bilgisi Shopier'de yanıt başlıklarında gelir; sunucu bunu her liste yanıtına `pagination` alanı olarak ekler.
-- Fiyatlar metin olarak gönderilir (`"249.90"`).
-- Ürün görselleri herkese açık bir URL olmalıdır.
-- Hız sınırı dakikada 200 istek. 429 alınırsa `Retry-After` ≤ 10 sn ise bir kez otomatik yeniden denenir.
-- 5xx hatasında yalnızca okuma istekleri bir kez yeniden denenir. Yazma isteklerinde (iade dahil) zaman aşımı veya 5xx olursa sunucu "sonuç bilinmiyor" der ve tekrar denemeden önce kaydın kontrol edilmesini ister; böylece çift iade gibi riskler önlenir.
-- Boş güncellemeler, boş/`..` ID'ler, negatif tutarlar ve spec'teki koşullu zorunlu alanlar (dijital teslimat notu, indirim tipine göre tutar/yüzde) istek gönderilmeden yerel olarak reddedilir.
+- **Date format:** `yyyy-MM-ddTHH:mm:ss+0300` (no colon in the offset). Discount dates use `yyyy-MM-dd+0300`.
+- Without dates, `list_orders` returns **only the last 60 days**.
+- List endpoints return at most 50 items per page. Shopier sends pagination data in response headers; the server adds it to every list response as a `pagination` field.
+- Prices are sent as strings (`"249.90"`).
+- Product images must be publicly reachable URLs.
+- The rate limit is 200 requests per minute. On a 429, the request is retried once automatically if `Retry-After` is 10 seconds or less.
+- On a 5xx, only read requests are retried once. For write requests (refunds included), a timeout or 5xx is reported as "outcome unknown" and the model is asked to check the record before retrying, which prevents double refunds.
+- Empty updates, empty or `..` IDs, negative amounts and the spec's conditionally required fields (the note for digital deliveries, the amount or percentage for each discount type) are rejected locally before any request is sent.
 
 ## Test
 
@@ -123,15 +125,15 @@ Mağaza ayarlarını değiştirme (mağazayı kapatabilir) ve webhook oluşturma
 npm test
 ```
 
-Ağ ve gerçek PAT gerektirmez:
+Needs no network and no real PAT:
 
-- `test/smoke.mjs`: MCP el sıkışması, bayraklara göre araç sayıları (17 / 26 / 28), PAT yokken hata mesajı.
-- `test/mock.mjs`: yerel sahte API'ye karşı — sorgu parametreleri ve pagination başlıkları; `create_product`, `update_product`, `fulfill_order`, `create_discount_code`, `create_refund` gövdeleri; DELETE ve ID kodlama; yerel doğrulamalar (istek gönderilmediği kontrol edilir); 403/404 hata mesajları; 429 ve 5xx yeniden deneme kuralları; geçersiz karakterli PAT'in hata mesajına sızmaması.
+- `test/smoke.mjs`: MCP handshake, tool counts per flag (17 / 26 / 28), and the error message when no PAT is set.
+- `test/mock.mjs`: against a local mock API — query parameters and pagination headers; request bodies of `create_product`, `update_product`, `fulfill_order`, `create_discount_code` and `create_refund`; DELETE and ID encoding; local validation (checking that no request is sent); 403/404 error messages; the 429 and 5xx retry rules; and that a PAT with invalid characters never leaks into an error message.
 
-İsteğe bağlı: `npm run test:live` gerçek `api.shopier.com`'a **sahte** bir token ile istek atar ve temiz bir 401 bekler.
+Optional: `npm run test:live` calls the real `api.shopier.com` with a **fake** token and expects a clean 401.
 
-Gerçek bir mağazaya karşı uçtan uca test edilmemiştir. Yazma isteklerinde 30 sn zaman aşımı yolu da otomatik testte yoktur.
+It has not been tested end to end against a real shop, and the 30-second timeout path for write requests has no automated test.
 
-## Lisans
+## License
 
-MIT. Ayrıntı için [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 - 2026-11-15
+
+- The main `README.md` is now in English; the Turkish version moved to `README.tr.md`. The English README now includes the full API notes and test details.
+- No code changes.
+
 ## 0.1.1 - 2026-11-15
 
 - Published to npm as `shopier-mcp`; install with `npx -y shopier-mcp@0.1.1`.

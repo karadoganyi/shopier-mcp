@@ -1,6 +1,6 @@
 {
   "name": "shopier-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unofficial MCP server for the Shopier REST API (orders, products, shipping, refunds, balance). Not affiliated with Shopier.",
   "mcpName": "io.github.karadoganyi/shopier-mcp",
   "keywords": [
@@ -30,7 +30,7 @@
   "files": [
     "dist",
     "README.md",
-    "README.en.md"
+    "README.tr.md"
   ],
   "engines": {
     "node": ">=22"

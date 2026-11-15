@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
 import { connect, names, text } from "./helpers.mjs";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const rootDir = fileURLToPath(new URL("..", import.meta.url));
+const readmes = fs.readdirSync(rootDir).filter((f) => /^readme/i.test(f));
+assert.deepEqual(readmes, ["README.md"], "npm picks an arbitrary README* from the root; keep only README.md there");
+console.log("✓ kökte yalnızca README.md var (npm sayfası İngilizce README'yi gösterir)");
 
 let c = await connect({});
 let n = await names(c);

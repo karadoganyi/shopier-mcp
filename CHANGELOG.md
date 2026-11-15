@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-11-15
+
+- npm showed the Turkish README on the package page, because npm picks the first `README.*` file it finds in the package root. The Turkish README moved to `docs/README.tr.md`, so `README.md` (English) is the only README in the root.
+- A test now fails if more than one `README*` file is in the package root.
+- No code changes.
+
 ## 0.1.2 - 2026-11-15
 
 - The main `README.md` is now in English; the Turkish version moved to `README.tr.md`. The English README now includes the full API notes and test details.

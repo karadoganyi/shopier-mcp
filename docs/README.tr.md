@@ -1,12 +1,12 @@
 # shopier-mcp
 
-[English](README.md)
+[English](../README.md)
 
 [Shopier REST API v1](https://developer.shopier.com/reference/introduction) için **resmi olmayan** bir MCP sunucusu. Claude'un (veya MCP destekleyen başka bir istemcinin) Shopier mağazanızdaki siparişleri, ürünleri, kargoları, iadeleri ve bakiyeyi okumasını; isterseniz ürün/sipariş/indirim güncellemesini sağlar.
 
 ## Durum
 
-Deneysel (v0.1.2). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
+Deneysel (v0.1.3). Protokol ve yerel sahte API testlerinden geçti, ancak **henüz gerçek bir Shopier mağazasına karşı uçtan uca denenmedi**. Önce yalnızca okuma araçlarıyla deneyin.
 
 Resmi kaynaklar yalnızca bu GitHub deposu ve npm'deki [`shopier-mcp`](https://www.npmjs.com/package/shopier-mcp) paketidir. Benzer adlı başka paketler bu projeye ait değildir.
 
@@ -41,12 +41,12 @@ Kaynak: [Creating and using PATs](https://developer.shopier.com/docs/creating-an
 
 ## Kurulum
 
-Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.2`); yeni sürüme geçmek için numarayı elle güncelleyin.
+Ayrıca bir şey kurmanız gerekmez: MCP istemciniz sunucuyu `npx` ile npm'den indirip çalıştırır. Aşağıdaki örnekler sürümü sabitler (`@0.1.3`); yeni sürüme geçmek için numarayı elle güncelleyin.
 
 ### Claude Code
 
 ```bash
-claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.2
+claude mcp add shopier --scope user -e SHOPIER_PAT=BURAYA_PAT -- npx -y shopier-mcp@0.1.3
 ```
 
 `--scope user` sunucuyu tüm projelerde kullanılabilir yapar (varsayılan `local` yalnızca o klasörde geçerlidir). Yazma araçlarını da açmak için `-e SHOPIER_ALLOW_WRITES=true` ekleyin.
@@ -62,7 +62,7 @@ Not: Bu komut PAT'i kabuk geçmişine (`~/.zsh_history`) yazar. Önlemek için k
   "mcpServers": {
     "shopier": {
       "command": "npx",
-      "args": ["-y", "shopier-mcp@0.1.2"],
+      "args": ["-y", "shopier-mcp@0.1.3"],
       "env": {
         "SHOPIER_PAT": "BURAYA_PAT",
         "SHOPIER_ALLOW_WRITES": "false"
@@ -80,7 +80,7 @@ cd shopier-mcp
 npm install
 ```
 
-`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.2` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
+`npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.3` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
 
 ## Ortam değişkenleri
 
@@ -134,4 +134,4 @@ Gerçek bir mağazaya karşı uçtan uca test edilmemiştir. Yazma isteklerinde 
 
 ## Lisans
 
-MIT. Ayrıntı için [LICENSE](LICENSE).
+MIT. Ayrıntı için [LICENSE](../LICENSE).

@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { connect, text } from "./helpers.mjs";
+const c = await connect({ SHOPIER_PAT: "fake-token-for-test" });
+const r = await c.callTool({ name: "list_orders", arguments: { limit: 1 } });
+console.log(text(r));
+assert.equal(r.isError, true);
+assert.match(text(r), /\(401\)/);
+assert.ok(!text(r).includes("fake-token-for-test"));
+await c.close();
+console.log("✓ gerçek API sahte token'a 401 döndü, token sızmadı");

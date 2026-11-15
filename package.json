@@ -1,0 +1,53 @@
+{
+  "name": "shopier-mcp",
+  "version": "0.1.0",
+  "description": "Unofficial MCP server for the Shopier REST API (orders, products, shipping, refunds, balance). Not affiliated with Shopier.",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "shopier",
+    "e-commerce",
+    "turkey",
+    "claude"
+  ],
+  "license": "MIT",
+  "author": "karadoganyi (https://github.com/karadoganyi)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karadoganyi/shopier-mcp.git"
+  },
+  "homepage": "https://github.com/karadoganyi/shopier-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/karadoganyi/shopier-mcp/issues"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "shopier-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "npm run build && node test/smoke.mjs && node test/mock.mjs",
+    "test:live": "npm run build && node test/live.mjs",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

@@ -82,6 +82,16 @@ npm install
 
 `npm install` derlemeyi de yapar (`dist/` oluşur). Yukarıdaki örneklerde `npx -y shopier-mcp@0.1.4` yerine `node /TAM/YOL/shopier-mcp/dist/index.js` kullanın.
 
+### Agent skill'i (isteğe bağlı)
+
+[`skills/using-shopier-mcp/SKILL.md`](../skills/using-shopier-mcp/SKILL.md), agent'a hangi bayrağın hangi aracı açtığını, bir araç eksik olduğunda ne söylemesi gerektiğini (sunucu bağlı değil, bayrak kapalı ya da desteklenmiyor) ve PAT'in nasıl korunacağını anlatır. Agent'a, sohbete yapıştırılan bir PAT ile sunucuyu kurmamasını söyler. Claude Code için dosyayı skill klasörünüze kopyalayın:
+
+```bash
+mkdir -p ~/.claude/skills/using-shopier-mcp && curl -fsSL https://raw.githubusercontent.com/karadoganyi/shopier-mcp/main/skills/using-shopier-mcp/SKILL.md -o ~/.claude/skills/using-shopier-mcp/SKILL.md
+```
+
+`SKILL.md` biçimini destekleyen diğer agent'lar aynı dosyayı kendi skill klasörlerinden yükleyebilir.
+
 ## Ortam değişkenleri
 
 | Değişken | Varsayılan | Açıklama |

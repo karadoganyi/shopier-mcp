@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- New agent skill, `skills/using-shopier-mcp/SKILL.md`. It tells the agent which flag adds which tool, how to tell a disconnected server from a flag that is off or an action the server does not support, how the user turns a flag on, and how to handle the PAT (never ask for it in chat; a PAT pasted into chat is treated as leaked). It is not part of the npm package; the README explains how to install it.
+- `npm test` now fails if the skill names a tool that does not exist, if its flag table no longer matches the registered tools, or if its pinned version differs from `package.json`.
+- No server code changes.
+
 ## 0.1.4 - 2026-11-15
 
 First run against a real Shopier shop.

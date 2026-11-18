@@ -84,6 +84,16 @@ npm install
 
 `npm install` also builds the project (`dist/`). In the examples above, replace `npx -y shopier-mcp@0.1.4` with `node /ABSOLUTE/PATH/shopier-mcp/dist/index.js`.
 
+### Agent skill (optional)
+
+[`skills/using-shopier-mcp/SKILL.md`](skills/using-shopier-mcp/SKILL.md) tells the agent which flag adds which tool, what to say when a tool is missing (server not connected, flag off, or not supported), and how to handle the PAT. It instructs the agent not to set up the server with a PAT pasted into the chat. For Claude Code, copy it into your skills folder:
+
+```bash
+mkdir -p ~/.claude/skills/using-shopier-mcp && curl -fsSL https://raw.githubusercontent.com/karadoganyi/shopier-mcp/main/skills/using-shopier-mcp/SKILL.md -o ~/.claude/skills/using-shopier-mcp/SKILL.md
+```
+
+Agents that support the `SKILL.md` format can load the same file from their own skills folder.
+
 ## Environment variables
 
 | Variable | Default | Description |
